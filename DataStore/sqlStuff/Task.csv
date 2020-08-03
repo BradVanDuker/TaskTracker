@@ -1,0 +1,23 @@
+Id|Title|Description|AssignedToUserId|SourceUserId|DateCreated|DateAssigned|DateCompleted|Notes
+1|Basic Controler|Create a simple super controller to tie everyting together|1|1|2020-07-17 00:00:00|7/17/2020 12:00:00 AM||
+2|Invalid Menu Options|Handle errors for invalid inputs for the command line menu|1|1|2020-07-17 00:00:00|7/17/2020 12:00:00 AM||
+3|Testing|Learn to use unit testing features of VS.|1|1|2020-07-21 00:00:00|7/21/2020 12:00:00 AM||
+4|Command Objects|The menu needs to handle user inputs with 0+ parameters and various return types|1|1|2020-07-21 00:00:00|7/21/2020 12:00:00 AM||
+5|Utilities lib|Add more utility functions to my library|1|1|2020-07-21 00:00:00|7/21/2020 12:00:00 AM||
+6|Abstract away commands from the interface.|Implement some sort of command o-o pattern|1|1|2020-07-21 00:00:00|7/21/2020 12:00:00 AM|7/23/2020 12:00:00 AM|
+7|Asynch Interface|The interface should run on a seperate thread than the program.  This will be good practice for asyn programming and events.  It's probably a best practice, anyway.  This will also help prep for a web-server system should I ever implement one.|1|1|2020-07-22 00:00:00|7/22/2020 12:00:00 AM||
+8|Shell Interface|Complete an interface that can be used interactivley from the command prompt.  This should run as an asynchronus componenet.|1|1|2020-07-22 00:00:00|7/22/2020 12:00:00 AM|7/23/2020 12:00:00 AM|
+9|Handle Recursion|A Task's RelatedTask property can contain a cycle.  Find places where this might cause endless recursion and fix them.|1|1|2020-07-22 00:00:00|7/22/2020 12:00:00 AM|7/23/2020 12:00:00 AM|
+10|DefaultDict|Add to my utilities some equivlent to python's defaultDict class.|1|1|2020-07-16 00:00:00|7/16/2020 12:00:00 AM|7/16/2020 12:00:00 AM|
+11|Create a User Object|Create an object that will represent users|1|1|2020-07-16 00:00:00|7/16/2020 12:00:00 AM|7/16/2020 12:00:00 AM|
+12|Create Basic Data Store|Implemented something that might look like a store but doesn't really do anything|1|1|2020-07-16 00:00:00|7/16/2020 12:00:00 AM|7/16/2020 12:00:00 AM|
+13|Create a Task Object|Create a task object|1|1|2020-07-16 00:00:00|7/16/2020 12:00:00 AM|7/16/2020 12:00:00 AM|
+14|Add task id|Add a unique identifier to tasks|1|1|2020-07-16 00:00:00|7/16/2020 12:00:00 AM|7/16/2020 12:00:00 AM|
+15|Basic User Interface|Create a super simple command-line interface.|1|1|2020-07-17 00:00:00|7/17/2020 12:00:00 AM|7/17/2020 12:00:00 AM|
+16|Task Status|Add a Status state property to Task object|1|1|2020-07-16 00:00:00|7/16/2020 12:00:00 AM|7/21/2020 12:00:00 AM|Feature not needed at this time.
+17|Add to Repo|Learn how to use VS built-in repo management.  Commit this build.|1|1|2020-07-16 00:00:00|7/16/2020 12:00:00 AM|7/21/2020 12:00:00 AM|Some java error keeps git from working.  I will need to manually add to github.
+18|Add basic functionality to data store|Add ability to get all tasks from store, get one task, and delete one task.|1|1|2020-07-21 00:00:00|7/21/2020 12:00:00 AM|7/21/2020 12:00:00 AM|
+19|Add basic handlers to main program.|Add ability to get all tasks from store, get one task, and delete one task.|1|1|2020-07-21 00:00:00|7/21/2020 12:00:00 AM|7/22/2020 12:00:00 AM|See task about adding basic functionality to data store
+20|Subtasks|A task should be able to be broken down into any number sub-tasks.|1|1|2020-07-21 00:00:00|7/21/2020 12:00:00 AM|7/22/2020 12:00:00 AM|
+21|Back up database data|Instead of relying on the bootstrap db helper, export table construction sql and table data.  Retool bootstrap to use these files|1|1|2020-08-01 00:00:00|2020-08-01 00:00:00||
+22|Single source database|Get the connection string creation method to point to the top level of the project.  Adjust the solution to use this top level db (content, copy if newer, etc.)|1|1|2020-08-01 00:00:00|2020-08-01 00:00:00||
