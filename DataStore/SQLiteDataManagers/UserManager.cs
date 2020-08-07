@@ -23,23 +23,31 @@ namespace DataStore.DataManagers
         {
             using (var connection = GetConnection())
             {
-                string sql = "SELECT Id, Name FROM User;";
-
-                connection.Open();
-                var allUsers = new List<User>();
-                using (var command = new SqliteCommand(sql, connection))
+                try
                 {
-                    command.CommandText = sql;
-                    command.CommandType = CommandType.Text;
-                    var reader = command.ExecuteReader();
-                    while (reader.Read())
+                    string sql = "SELECT Id, Name FROM User;";
+
+                    connection.Open();
+                    var allUsers = new List<User>();
+                    using (var command = new SqliteCommand(sql, connection))
                     {
-                        allUsers.Add(new User(
-                            reader.GetFieldValue<string>("Name"),
-                            reader.GetFieldValue<int>("Id")));
+                        command.CommandText = sql;
+                        command.CommandType = CommandType.Text;
+                        var reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            allUsers.Add(new User(
+                                reader.GetFieldValue<string>("Name"),
+                                reader.GetFieldValue<int>("Id")));
+                        }
                     }
+                    return allUsers;
                 }
-                return allUsers;
+                catch(Exception e)
+                {
+                    Console.WriteLine("!!!" + DbUtilityHelper.GetConnectionInfo(connection));
+                    throw e;
+                }
             }
         }
 

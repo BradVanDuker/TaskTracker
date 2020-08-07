@@ -48,7 +48,7 @@ namespace DataStore.misc
             var currentLocation = Assembly.GetExecutingAssembly().Location;
             var currentDirectory = new FileInfo(currentLocation).Directory;
             var almostThere = currentDirectory.Parent.Parent.Parent.Parent.FullName;
-            var directory = Path.Combine(almostThere, "DataSource");
+            var directory = Path.Combine(almostThere, "DataStore");
 
             //return projectDirectory;
             //return System.AppDomain.CurrentDomain.BaseDirectory;
