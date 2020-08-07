@@ -11,7 +11,8 @@ namespace TaskTracker
     internal class Program
     {
         static private bool isRunning = true;
-        static private DataStore.IDataStore dataStore = new SimpleStore();
+        //static private DataStore.IDataStore dataStore = new SimpleStore();
+        static private IDataStore dataStore = new SQLite3Store();
         static private CommandLineInterface ui;
 
         private static void Main(string[] args)

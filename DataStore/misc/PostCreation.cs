@@ -8,43 +8,41 @@ using TaskTracker;
 using CsvHelper;
 using System.Globalization;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+using DataStore.DataManagers;
 
 namespace DataStore.misc
 {
+
+    // Create a simple Task csv file and use that to test csvhelper -- did nothing
+    // Post your bug on csvhelper or stack overflow
+    // Go back to simple store and work on something else
+    // Do another project.
     abstract class PostCreation : DbUtilityHelper
     {
-        
+        static UserManager userManager;
+        static TaskManager taskManager;
         public static void InitializeDb()
         {
             try
             {
                 using (var connection = GetConnection())
                 {
+                    userManager = new UserManager(connection);
+                    taskManager = new TaskManager(connection, userManager);
                     connection.Open();
+
 
                     var tableNames = GetTableNames(connection);
 
-
-                    if (!tableNames.Contains("User"))
+                    if (!tableNames.Contains("Task"))
                     {
-                        ExecuteNonQuery(GetUserTableCreationString(), connection);
-                        Console.WriteLine("User table created");
+                        ExecuteNonQuery(GetTaskTableCreationString(), connection);
+                        Console.WriteLine("Task table created");
                     }
-                    if (GetRowCount(connection, "User") == 0)
+                    if (GetRowCount(connection, "Task") == 0)
                     {
-                        PopulateUserTable(connection);
+                        PopulateTaskTable(connection); // it crashes, but it saves the data.
                     }
-
-                    //if (!tableNames.Contains("Task"))
-                    //{
-                    //    ExecuteNonQuery(GetTaskTableCreationString(), connection);
-                    //    Console.WriteLine("Task table created");
-                    //}
-                    //if (GetRowCount(connection, "Task") == 0)
-                    //{
-                    //    PopulateTaskTable(connection);
-                    //}
                 }
             }
             catch (Exception e)
@@ -53,22 +51,118 @@ namespace DataStore.misc
             }
         }
 
-        
+
+        #region Common Functions
+        private static void RunCommand(SqliteConnection connection, SqliteCommand command)
+        {
+            RunCommands(connection, new List<SqliteCommand>() { command });
+        }
+
+        private static void RunCommands(SqliteConnection connection, IEnumerable<SqliteCommand> commands)
+        {
+            using (connection)
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        foreach (var command in commands)
+                        {
+                            using (command)
+                            {
+                                command.Connection = connection;
+                                command.Transaction = transaction;
+                                command.CommandType = CommandType.Text;
+                                command.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        throw e;
+                    }
+                    transaction.Commit();
+                }
+            }
+        }
+
+
+        private static IEnumerable<T> GetCSVData<T>(string fullFileName)
+        {
+            PrintMembers<T>();
+            using (var reader = new StreamReader(fullFileName))
+            {
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.HasHeaderRecord = true;
+                    csv.Configuration.IncludePrivateMembers = false;
+                    csv.Parser.Configuration.Delimiter = "|";
+
+                    var records = csv.GetRecords<T>().ToList();
+                    return records;
+                }
+            }
+        }
+
+        private static void PrintMembers<T>()
+        {
+            Console.WriteLine();
+            var t = typeof(T);
+
+            Console.WriteLine("Properties...");
+            var props = t.GetProperties().ToList();
+            if (props.Count == 0)
+            {
+                Console.WriteLine("\t[None]");
+            }
+            else
+            {
+                foreach (var p in props)
+                {
+                    Console.WriteLine("\t" + p.Name);
+                }
+            }
+
+            Console.WriteLine("Fields...");
+            var fields = t.GetFields().ToList();
+            if (fields.Count == 0)
+            {
+                Console.WriteLine("\t[None]");
+            }
+            else
+            {
+                foreach (var f in fields)
+                {
+                    Console.WriteLine($"\t{f.Name}");
+                }
+            }
+            Console.WriteLine();
+        }
+
+        private static void PrintFile(string fileName)
+        {
+            using (var reader = new StreamReader(fileName))
+            {
+                Console.WriteLine(reader.ReadToEnd());
+            }
+        }
+
 
         private static string GetSqlFromFile(string fileName)
         {
             var fullName = Path.Join(cwdPath, sqlFolder, fileName);
             return File.ReadAllText(fullName);
         }
+        #endregion
 
+
+
+        #region User Stuff
         private static string GetUserTableCreationString()
         {
             return GetSqlFromFile("UserTableCreation.sql");
-        }
-
-        private static string GetTaskTableCreationString()
-        {
-            return GetSqlFromFile("TaskTableCreation.sql");
         }
 
         internal class IntermediateUser : User
@@ -102,130 +196,117 @@ namespace DataStore.misc
             }
 
             RunCommands(connection, commands);
-
-            //using (connection)
-            //{
-            //    connection.Open();
-            //    using (var transaction = connection.BeginTransaction())
-            //    {
-            //        try
-            //        {
-            //            foreach (var user in users)
-            //            {
-            //                SqliteParameter id = new SqliteParameter("Id", user.Id);
-            //                SqliteParameter name = new SqliteParameter("Name", user.Name);
-            //                using (var command = connection.CreateCommand())
-            //                {
-
-            //                    command.Parameters.Add(id);
-            //                    command.Parameters.Add(name);
-            //                    command.Transaction = transaction;
-            //                    command.CommandText = sql;
-            //                    command.CommandType = CommandType.Text;
-            //                    command.ExecuteNonQuery();
-            //                }
-            //            }
-            //            transaction.Commit();
-            //        }
-            //        catch (Exception e)
-            //        {
-            //            transaction.Rollback();
-            //            throw e;
-            //        }
-            //    }
-            //}
         }
+        #endregion
 
-        internal class IntermediateTask : Task
+
+        #region Task Stuff
+
+        private static string GetTaskTableCreationString()
         {
-             new public int Id { get; set; }
-
-            IntermediateTask() : base("", "", new IntermediateUser(), new IntermediateUser())
-            {
-
-            }
+            return GetSqlFromFile("TaskTableCreation.sql");
         }
+
+        
         private static void PopulateTaskTable(SqliteConnection connection)
         {
-            var fileName = Path.Join(cwdPath, "Task.csv");
-            var tasks = GetCSVData<IntermediateTask>(fileName);
-            var sql = "INSERT INTO Task (Id, Title, Description, AssignedToUserId, " +
-                            "SourceUserId, DateCreated, DateAssigned, DateCompleted, Notes) " +
-                        "VALUES(@Id, @Title, @Description, @AssignedToUserId, " +
-                            "@SourceUserId, @DateCreated, @DateAssigned, @DateCompleted, @Notes);";
-            using(connection)
+            var fileName = Path.Join(cwdPath, "sqlStuff", "Task.csv");
+            var intTask = GetCSVData<IntermediateTask>(fileName);
+            foreach(var it in intTask)
             {
-                using (var transaction = connection.BeginTransaction())
+                var task = it.toTask();
+                taskManager.Insert(task);
+            }
+        }
+        
+        
+
+        public class IntermediateTask
+        {
+            private int _Id;
+            public int Id
+            {
+                get { return _Id; }
+                set { this._Id = value; }
+            }
+            public string Title { get; set; }
+            public string Description { get; set; }
+            public int AssignedToUserId{ get; set; }
+            public int SourceUserId { get; set; }
+            public string DateCreated { get; set; }
+#nullable enable
+
+            private string? _DateAssigned;
+            public string? DateAssigned
+            { 
+                get { return _DateAssigned; }
+                set { _DateAssigned = ConvertBlanksToNull(value); }
+            }
+
+            private string? _DateCompleted;
+            public string? DateCompleted
+            {
+                get { return _DateCompleted; }
+                set { _DateCompleted = ConvertBlanksToNull(value); }
+            }
+
+            private string? _Notes;
+            public string? Notes
+            {
+                get { return _Notes; }
+                set { _Notes = ConvertBlanksToNull(value); }
+            }
+
+            private string? ConvertBlanksToNull(string? value)
+            {
+                return value != "" ? value : null;
+            }
+#nullable disable
+
+            public List<object> ToList()
+            {
+                var myProps = this.GetType().GetProperties();
+                var values = new List<object>();
+                foreach(var prop in myProps)
                 {
-                    foreach(var task in tasks)
+                    values.Add(prop.GetValue(this));
+                }
+                return values;
+            }
+
+            public Task toTask()
+            {
+
+                DateTime? processNullableDate(string? stringRep)
+                {
+                    if(stringRep == null || stringRep == "")
                     {
-                        using (var command = connection.CreateCommand())
-                        {
-                            command.Parameters.Add(new SqliteParameter("Id", task.Id));
-                            command.Parameters.Add(new SqliteParameter("Title", task.Title));
-                            command.Parameters.Add(new SqliteParameter("Description", task.Description));
-                            command.Parameters.Add(new SqliteParameter("AssignedToUserId", task.AssignedTo.Id));
-                            command.Parameters.Add(new SqliteParameter("SourceUserId", task.Source.Id));
-                            command.Parameters.Add(new SqliteParameter("DateCreated", task.DateCreated));
-                            command.Parameters.Add(new SqliteParameter("DateAssigned", task.DateAssigned));
-                            command.Parameters.Add(new SqliteParameter("DateCompleted", task.DateCompleted));
-                            command.Parameters.Add(new SqliteParameter("Notes", task.Notes));
-                            command.Transaction = transaction;
-                            command.CommandText = sql;
-                            command.CommandType = CommandType.Text;
-                            command.ExecuteNonQuery();
-                        }
+                        return null;
+                    }
+                    else
+                    {
+                        return DateTime.Parse(stringRep);
                     }
                 }
+                var dateCreated =  processNullableDate(this.DateCreated);
+                var dateAssigned = processNullableDate(this.DateAssigned);
+                var dateCompleted = processNullableDate(this.DateCompleted);
+
+                var task = new Task(
+                    title: this.Title,
+                    description: this.Description,
+                    assignedTo: userManager.Get(this.AssignedToUserId),
+                    source: userManager.Get(this.SourceUserId),
+                    id: this.Id,
+                    dateCreated: dateCreated,
+                    dateAssigned: dateAssigned,
+                    dateCompleted: dateCompleted
+                    );
+                return task;
             }
         }
 
-        private static void RunCommand(SqliteConnection connection, SqliteCommand command)
-        {
-            RunCommands(connection, new List<SqliteCommand>() { command });
-        }
-
-        private static void RunCommands(SqliteConnection connection, IEnumerable<SqliteCommand> commands)
-        {
-            using(connection)
-            {
-                connection.Open();
-                using(var transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        foreach (var command in commands)
-                        {
-                            using (command)
-                            {
-                                command.Connection = connection;
-                                command.Transaction = transaction;
-                                command.CommandType = CommandType.Text;
-                                command.ExecuteNonQuery();
-                            }
-                        }
-                    }
-                    catch(Exception e)
-                    {
-                        transaction.Rollback();
-                        throw e;
-                    }
-                }
-            }
-        }
-
-
-        private static IEnumerable<T> GetCSVData<T>(string fullFileName)
-        {
-            using (var reader = new StreamReader(fullFileName))
-            {
-                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-                {
-                    csv.Parser.Configuration.Delimiter = "|";
-                    var records = csv.GetRecords<T>().ToList();
-                    return records;
-                }
-            }
-        }
+        #endregion
+        
     }
 }

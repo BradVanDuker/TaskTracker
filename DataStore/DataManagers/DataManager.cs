@@ -67,8 +67,8 @@ namespace DataStore.DataManagers
                     }
                     transaction.Commit();
                 }
-                return id;
             }
+            return id;
         }
     }
 }

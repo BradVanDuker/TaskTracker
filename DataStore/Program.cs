@@ -15,13 +15,7 @@ namespace DataStore
             {
                 Console.WriteLine("Hello World!");
                 var dataStore = new SQLite3Store();
-                PostCreation.InitializeDb();
-                
-
-                //QuickTestGetAllTasks(dataStore);
-
-
-
+                //PostCreation.InitializeDb();
                 Console.WriteLine("Done!");
             }
             catch (Exception e)
@@ -66,6 +60,5 @@ namespace DataStore
                 Console.WriteLine("Deleted Fred");
             }
         }
-        
     }
 }

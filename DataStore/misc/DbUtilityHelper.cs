@@ -68,13 +68,22 @@ namespace DataStore.misc
 
         public static int GetRowCount(SqliteConnection openConnection, string tableName, string colName = "Id")
         {
-            using(var cmd = openConnection.CreateCommand())
+            try
             {
-                cmd.CommandText = $"SELECT COUNT({colName}) FROM {tableName};";
-                cmd.CommandType = CommandType.Text;
-                var reader = cmd.ExecuteReader();
-                reader.Read();
-                return reader.GetInt32(0);
+                using (var cmd = openConnection.CreateCommand())
+                {
+                    cmd.CommandText = $"SELECT COUNT({colName}) FROM {tableName};";
+                    cmd.CommandType = CommandType.Text;
+                    var reader = cmd.ExecuteReader();
+                    reader.Read();
+                    return reader.GetInt32(0);
+                }
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(GetConnectionInfo(openConnection));
+                Console.WriteLine(e);
+                throw e;
             }
         }
 

@@ -197,6 +197,7 @@ namespace DataStore.DataManagers
                             "SourceUserId, DateCreated, DateAssigned, DateCompleted, Notes)" +
                         "VALUES(@title, @description, @assignedToUserId, @sourceUserId, " +
                             "@dateCreated, @dateAssigned, @dateCompleted, @notes);";
+            int rowId = -1;
             using (this.connection)
             {
 
@@ -212,9 +213,10 @@ namespace DataStore.DataManagers
                         new SqliteParameter("@notes", task.Notes ?? ""),
                         new SqliteParameter("@assignedToUserId", task.AssignedTo.Id),
                         new SqliteParameter("@sourceUserId", task.Source.Id)
-            };
-                return InsertAndGetId(sql, args);
+                };
+                rowId = InsertAndGetId(sql, args);
             }
+            return rowId;
         }
 
         public override void Update(Task thing)

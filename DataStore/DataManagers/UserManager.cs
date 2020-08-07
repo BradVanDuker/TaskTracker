@@ -23,7 +23,7 @@ namespace DataStore.DataManagers
         {
             using (var connection = GetConnection())
             {
-                string sql = "SELECT Id, UserName FROM User;";
+                string sql = "SELECT Id, Name FROM User;";
 
                 connection.Open();
                 var allUsers = new List<User>();
@@ -35,7 +35,7 @@ namespace DataStore.DataManagers
                     while (reader.Read())
                     {
                         allUsers.Add(new User(
-                            reader.GetFieldValue<string>("UserName"),
+                            reader.GetFieldValue<string>("Name"),
                             reader.GetFieldValue<int>("Id")));
                     }
                 }
