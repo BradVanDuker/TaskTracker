@@ -1,4 +1,5 @@
 ﻿using DataStore.misc;
+using DataStore.SQLiteDataManagers;
 using System;
 using System.Linq;
 using TaskTracker;
@@ -14,8 +15,11 @@ namespace DataStore
             try
             {
                 Console.WriteLine("Hello World!");
-                var dataStore = new SQLite3Store();
+                //var dataStore = new SQLite3Store();
                 //PostCreation.InitializeDb();
+                var um = SQLiteManagerFactory.GetUserManager();
+                var tm = SQLiteManagerFactory.GetTaskManager();
+                var tasks = tm.GetAll();
                 Console.WriteLine("Done!");
             }
             catch (Exception e)

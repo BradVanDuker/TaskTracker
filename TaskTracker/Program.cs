@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using TaskTracker.UserInterfaces;
-using TaskTracker.DataStore;
-
+using DataStore.DataManagers;
+using DataStore.SQLiteDataManagers;
 
 
 namespace TaskTracker
@@ -12,7 +12,10 @@ namespace TaskTracker
     {
         static private bool isRunning = true;
         //static private DataStore.IDataStore dataStore = new SimpleStore();
-        static private IDataStore dataStore = new SQLite3Store();
+        //static private IDataStore dataStore = new SQLite3Store();
+        static private DataManager<Task> taskManager;
+        static private DataManager<User> userManager;
+
         static private CommandLineInterface ui;
 
         private static void Main(string[] args)
@@ -22,6 +25,9 @@ namespace TaskTracker
                 Console.WriteLine("Hello World!");
                 ui = new CommandLineInterface();
                 var menuOptions = GenerateMenuOptions();
+
+                userManager = SQLiteManagerFactory.GetUserManager();
+                taskManager = SQLiteManagerFactory.GetTaskManager();
 
                 while (isRunning)
                 {
@@ -33,8 +39,9 @@ namespace TaskTracker
                         //TestCommandLineInteraction(ui, dataStore.GetAllTasks());
                         //RunTests();
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Console.WriteLine(e);
                     }
                 }
             }
@@ -61,18 +68,18 @@ namespace TaskTracker
 
         protected static IEnumerable<Task> GetAllTasks()
         {
-            return dataStore.GetAllTasks();
+            return taskManager.GetAll();
             //throw new NotImplementedException();
         }
 
         protected static Task GetTask(int id)
         {
-            return dataStore.GetTask(id);
+            return taskManager.Get(id);
         }
 
-        protected static void DeleteTask(int id)
+        protected static void DeleteTask(Task task)
         {
-            dataStore.DeleteTask(id);
+            taskManager.Delete(task);
         }
 
         protected static void Quit()
@@ -107,7 +114,7 @@ namespace TaskTracker
             var quitOption = new MenuOption(id++, "Quit", new Action(() => isRunning = false));
             options.Add(quitOption);
 
-            var viewAllTasksOption = new MenuOption(id++, "View All Tasks", new Action(() => ui.DisplayTasks(dataStore.GetAllTasks())));
+            var viewAllTasksOption = new MenuOption(id++, "View All Tasks", new Action(() => ui.DisplayTasks(taskManager.GetAll())));
             options.Add(viewAllTasksOption);
 
             var viewTaskDetails = new Action(() =>
@@ -115,7 +122,7 @@ namespace TaskTracker
                 try
                 {
                     int taskId = Int32.Parse(ui.GetUserInput("Select a task id:  "));
-                    Task selectedTask = dataStore.GetAllTasks().First(task => task.Id == taskId);
+                    Task selectedTask = taskManager.GetAll().First(task => task.Id == taskId);
                     ui.DisplayTaskDetails(selectedTask);
                 }
                 catch
@@ -127,5 +134,6 @@ namespace TaskTracker
 
             return options;
         }
+
     }
 }

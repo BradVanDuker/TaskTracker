@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataStore\DataStore.csproj" />
+    <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>

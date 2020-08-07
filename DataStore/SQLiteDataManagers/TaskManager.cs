@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 using System.Data;
 using TaskTracker;
-
+using DataStore.misc;
 
 namespace DataStore.DataManagers
 {
-    class TaskManager : DataManager<Task>
+    public class TaskManager : DataManager<Task>
     {
         private readonly SqliteConnection connection;
         private readonly UserManager userManager;
         private readonly List<Converter> DbToInstanceConverters;
 
-        public TaskManager(SqliteConnection connection, UserManager userManager)
+        public TaskManager(UserManager userManager)
         {
-            this.connection = connection;
+            this.connection = DbUtilityHelper.GetConnection();
             this.userManager = userManager;
             DbToInstanceConverters = new List<Converter>();
 
@@ -63,68 +63,68 @@ namespace DataStore.DataManagers
                 return userManager.Get((int)id);
             }
                         
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "Id",
-                TargetAttrName = "Id",
-                InputProcessor = Int64ToInt32
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "Id",
+            //    TargetAttrName = "Id",
+            //    InputProcessor = Int64ToInt32
+            //});
 
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "Title",
-                TargetAttrName = "Title",
-                InputProcessor = PassThrough
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "Title",
+            //    TargetAttrName = "Title",
+            //    InputProcessor = PassThrough
+            //});
 
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "Description",
-                TargetAttrName = "Description",
-                InputProcessor = PassThrough
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "Description",
+            //    TargetAttrName = "Description",
+            //    InputProcessor = PassThrough
+            //});
 
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "AssignedToUserId",
-                TargetAttrName = "AssignedTo",
-                InputProcessor = IdToUser
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "AssignedToUserId",
+            //    TargetAttrName = "AssignedTo",
+            //    InputProcessor = IdToUser
+            //});
 
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "SourceUserId",
-                TargetAttrName = "Source",
-                InputProcessor = IdToUser
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "SourceUserId",
+            //    TargetAttrName = "Source",
+            //    InputProcessor = IdToUser
+            //});
 
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "DateCreated",
-                TargetAttrName = "DateCreated",
-                InputProcessor = StringToDateTime
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "DateCreated",
+            //    TargetAttrName = "DateCreated",
+            //    InputProcessor = StringToDateTime
+            //});
 
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "DateAssigned",
-                TargetAttrName = "Source",
-                InputProcessor = IdToUser
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "DateAssigned",
+            //    TargetAttrName = "Source",
+            //    InputProcessor = IdToUser
+            //});
 
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "DateCompleted",
-                TargetAttrName = "DateCompleted",
-                InputProcessor = IdToUser
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "DateCompleted",
+            //    TargetAttrName = "DateCompleted",
+            //    InputProcessor = IdToUser
+            //});
 
-            DbToInstanceConverters.Add(new Converter()
-            {
-                OriginAttrName = "Notes",
-                TargetAttrName = "Notes",
-                InputProcessor = PassThrough
-            });
+            //DbToInstanceConverters.Add(new Converter()
+            //{
+            //    OriginAttrName = "Notes",
+            //    TargetAttrName = "Notes",
+            //    InputProcessor = PassThrough
+            //});
             #endregion
         }
 
@@ -174,21 +174,33 @@ namespace DataStore.DataManagers
         override public IEnumerable<Task> GetAll()
         {
             var sql = "SELECT * FROM Task;";
+            
             using (var connection = GetConnection())
             {
-                connection.Open();
-                var tasks = new List<Task>();
-                using (var command = GetCommand(sql, connection))
+                try
                 {
-                    var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {  
-                        var t = CreatTaskFromReader(reader);
-                        tasks.Add(t);
+                    connection.Open();
+                    var tasks = new List<Task>();
+                    Console.WriteLine("!!!" + DbUtilityHelper.GetConnectionInfo(connection));
+                    using (var command = GetCommand(sql, connection))
+                    {
+                        var reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            var t = CreatTaskFromReader(reader);
+                            tasks.Add(t);
+                        }
                     }
+                    return tasks;
                 }
-                return tasks;
+                catch (Exception e)
+                {
+                    Console.WriteLine("!!!" + DbUtilityHelper.GetConnectionInfo(connection));
+                    
+                    throw e;
+                }
             }
+            
         }
 
         override public int Insert(Task task)

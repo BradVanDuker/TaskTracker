@@ -27,8 +27,8 @@ namespace DataStore.misc
             {
                 using (var connection = GetConnection())
                 {
-                    userManager = new UserManager(connection);
-                    taskManager = new TaskManager(connection, userManager);
+                    userManager = new UserManager();
+                    taskManager = new TaskManager(userManager);
                     connection.Open();
 
 

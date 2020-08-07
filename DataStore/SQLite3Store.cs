@@ -27,15 +27,15 @@ namespace TaskTracker.DataStore
         public SQLite3Store()
         {
             this.connection = DbUtilityHelper.GetConnection();
-            this.userManager = new UserManager(connection);
-            this.taskManager = new TaskManager(connection, userManager);
+            this.userManager = new UserManager();
+            this.taskManager = new TaskManager(userManager);
         }
 
         public SQLite3Store(SqliteConnection connection)
         {
             this.connection = connection;
-            this.userManager = new UserManager(connection);
-            this.taskManager = new TaskManager(connection, userManager);
+            this.userManager = new UserManager();
+            this.taskManager = new TaskManager(userManager);
         }
 
         

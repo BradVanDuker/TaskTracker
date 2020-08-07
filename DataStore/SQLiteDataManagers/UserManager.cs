@@ -13,10 +13,10 @@ namespace DataStore.DataManagers
     {
         readonly SqliteConnection connection;
 
-        public UserManager(SqliteConnection connection)
+        public UserManager()
         {
+            connection = DbUtilityHelper.GetConnection();
             Console.WriteLine(connection.DataSource.ToString());
-            this.connection = connection;
         }
 
         override public IEnumerable<User> GetAll()
