@@ -6,8 +6,32 @@ using TaskTracker;
 
 namespace DataStore.SQLiteDataManagers
 {
-    public class IntermediateTask
+    internal class IntermediateTask
     {
+        public IntermediateTask()
+        {
+
+        }
+
+        public IntermediateTask(Task task)
+        {
+            foreach(var incomingProp in typeof(Task).GetProperties())
+            {
+                var propName = incomingProp.Name;
+                var value = incomingProp.GetValue(task);
+                if (incomingProp.PropertyType.Equals(typeof(DateTime)))
+                {
+                    value = value.ToString();  // dates stored as strings in the db
+                }
+                var myProp = this.GetType().GetProperty(propName);
+                myProp.SetValue(this, value);
+            }
+
+            this.AssignedToUserId = this.AssignedTo.Id;
+            this.SourceUserId = this.Source.Id;
+        }
+
+
         private int _Id;
         public int Id
         {
@@ -19,6 +43,10 @@ namespace DataStore.SQLiteDataManagers
         public int AssignedToUserId { get; set; }
         public int SourceUserId { get; set; }
         public string DateCreated { get; set; }
+
+        public User AssignedTo { get; set; }
+        public User Source { get; set; }
+        public int MyProperty { get; set; }
 #nullable enable
 
         private string? _DateAssigned;

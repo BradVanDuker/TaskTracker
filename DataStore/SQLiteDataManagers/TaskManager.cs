@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
-using System.Data;
 using TaskTracker;
 using DataStore.misc;
 using Dapper;
+using DataStore.SQLiteDataManagers;
+using System.Linq;
 
 namespace DataStore.DataManagers
 {
@@ -13,7 +14,6 @@ namespace DataStore.DataManagers
         private readonly SqliteConnection connection;
         private readonly UserManager userManager;
 
-
         public TaskManager(UserManager userManager)
         {
             this.connection = DbUtilityHelper.GetConnection();
@@ -21,38 +21,19 @@ namespace DataStore.DataManagers
         }
         
 
-        private IEnumerable<Task> CreatTaskFromReader(SqliteDataReader reader)
-        {
-            var sql = "SELECT * FROM Task;";
-            using (connection)
-            {
-                var tasks = connection.Query<Task>(sql);
-                return tasks;
-            }
-            
-        }
-
         override public IEnumerable<Task> GetAll()
         {
             var sql = "SELECT * FROM Task;";
-            
+            IEnumerable<IntermediateTask> intermediateTasks;
             using (var connection = GetConnection())
             {
-                try
-                {
                     connection.Open();
-                    var tasks = connection.Query<Task>(sql);
-                    return tasks;
-                    
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("!!!" + DbUtilityHelper.GetConnectionInfo(connection));
-                    
-                    throw e;
-                }
+                    intermediateTasks = connection.Query<IntermediateTask>(sql);   
             }
-            
+            foreach (var it in intermediateTasks)
+            {
+                yield return it.ToTask(userManager);
+            }
         }
 
         override public int Insert(Task task)
@@ -64,7 +45,6 @@ namespace DataStore.DataManagers
             int rowId = -1;
             using (this.connection)
             {
-
                 connection.Open();
 
                 var args = new SqliteParameter[]
@@ -85,20 +65,26 @@ namespace DataStore.DataManagers
 
         public override void Update(Task thing)
         {
-            throw new NotImplementedException();
+            using (connection)
+            {
+                connection.Open();
+                
+                
+            }
+                
         }
 
         public override Task Get(int id)
         {
-            throw new NotImplementedException();
+            var tasks = GetAll();
+            var taskList = tasks.ToList();
+            return taskList.First(t => t.Id == id);
         }
 
         override public void Delete(Task task)
         {
             throw new NotImplementedException();
         }
-
-
     }
 
 

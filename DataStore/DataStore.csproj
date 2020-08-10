@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="SQLiteDataManagers\IntermediateTask.cs~RFa511d.TMP" />
     <None Remove="TaskTracker - Copy.db" />
     <None Remove="TaskTracker.db" />
   </ItemGroup>

@@ -4,6 +4,7 @@ using System.Linq;
 using TaskTracker.UserInterfaces;
 using DataStore.DataManagers;
 using DataStore.SQLiteDataManagers;
+using System.Reflection;
 
 
 namespace TaskTracker
@@ -117,7 +118,7 @@ namespace TaskTracker
             var viewAllTasksOption = new MenuOption(id++, "View All Tasks", new Action(() => ui.DisplayTasks(taskManager.GetAll())));
             options.Add(viewAllTasksOption);
 
-            var viewTaskDetails = new Action(() =>
+            var viewTaskDetailsOption = new Action(() =>
             {
                 try
                 {
@@ -130,9 +131,81 @@ namespace TaskTracker
                     ui.SendMessageToUser("Invalid Task id.");
                 }
             });
-            options.Add(new MenuOption(id++, "View Task Details", viewTaskDetails));
+            options.Add(new MenuOption(id++, "View Task Details", viewTaskDetailsOption));
+
+            var viewAllUsersOption = new MenuOption(id++, "View All Users", 
+                new Action(() =>
+                {
+                    var users = userManager.GetAll().Select(u => u.Name);
+                    ui.DisplayEnumeratedList(users);
+                }));
+            options.Add(viewAllUsersOption);
+
+            options.Add(new MenuOption(id++, "Add New Task", AddNewTask));
+
+
 
             return options;
+        }
+
+        delegate void ProcessInputHandler(PropertyInfo prop, string input, Task task);
+        static void AddNewTask()
+        {
+            var GenericPrompt = new Func<string, string>(propName => $"Please enter this task's {propName}");
+            var ProcessString = new ProcessInputHandler((prop, input, task) => prop.SetValue(task, input));
+            //var ProcessDate = new ProcessInputHandler((prop, input, task) => prop.SetValue(task, DateTime.Parse(input)));
+            var ProcessUser = new ProcessInputHandler((prop, input, task) =>
+            {
+                var user = userManager.GetAll().First(u => u.Name == input);
+                prop.SetValue(task, user);
+            });
+
+            var groups = new List<(string, string, ProcessInputHandler)>();
+            groups.Add( ("Title", GenericPrompt("Title"), ProcessString) );
+            groups.Add( ("Description", GenericPrompt("Description"), ProcessString) );
+            groups.Add( ("AssignedTo", "Please enter the user's name who is assigned to this task.", ProcessUser) );
+            groups.Add( ("Source", "Please enter the user's name who is assigning this task.", ProcessUser) );
+            groups.Add( ("Notes", "Please enter any additional notes for this task.", ProcessString) );
+
+            var dummyTask = new Task("", "", new User(""), new User(""));
+
+            var back = "BACK";
+            var quit = "QUIT";
+            Console.WriteLine($"Creating a new task. Enter \"{back}\" at any time to go back a step, or \"{quit}\" to quit.");
+
+            int i = 0;
+            while(-1 < i && i < groups.Count)
+            {
+                (var name, var prompt, var proc) = groups[i];
+                var prop = typeof(Task).GetProperty(name);
+                var promptForUser = prompt;
+                if (promptForUser == "")
+                {
+                    promptForUser = $"Enter the task's {name}";
+                }
+                var input = ui.GetUserInput(promptForUser);
+                
+                if( input == back ) 
+                    { i -= 1; continue; }
+                if(input == quit) 
+                    { return; }
+
+                try
+                {
+                    proc(prop, input, dummyTask);
+                }
+                catch(Exception)
+                {
+                    ui.SendMessageToUser("Oops!  Something went wrong!");
+                }
+
+                i++;
+            }
+
+            if (i < 0) { return; }
+
+            taskManager.Insert( new Task(dummyTask.Title, dummyTask.Description, 
+                dummyTask.AssignedTo, dummyTask.Source, notes: dummyTask.Notes));
         }
 
     }

@@ -77,5 +77,17 @@ namespace TaskTracker.UserInterfaces
                 throw new Exception("Invalid choice");
             }
         }
+
+        public void DisplayEnumeratedList(IEnumerable<object> stuff, string preface = "", string postface = "")
+        {
+            Console.WriteLine(preface);
+            var number = 0;
+            foreach(var thing in stuff)
+            {
+                Console.WriteLine($"{number}:  {thing}");
+                number++;
+            }
+            Console.WriteLine(postface);
+        }
     }
 }

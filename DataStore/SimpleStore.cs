@@ -13,8 +13,6 @@ namespace TaskTracker.DataStore
         public Task AddTask(Task task)
         {
             throw new NotImplementedException();
-            this.Tasks.Add(task);
-            return task;
         }
 
         public void DeleteTask(Task task)

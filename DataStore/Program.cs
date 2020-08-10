@@ -19,8 +19,22 @@ namespace DataStore
                 //PostCreation.InitializeDb();
                 var um = SQLiteManagerFactory.GetUserManager();
                 var tm = SQLiteManagerFactory.GetTaskManager();
-                //var users = um.GetAll();
+                var users = um.GetAll();
+                foreach(var u in users)
+                {
+                    Console.WriteLine(u.Name);
+                }
+
                 var tasks = tm.GetAll();
+                foreach (var t in tasks)
+                {
+                    Console.WriteLine(t.Title);
+                }
+                
+                Console.WriteLine();
+                var task = tm.Get(2);
+                Console.WriteLine(task.Title);
+
                 Console.WriteLine("Done!");
             }
             catch (Exception e)

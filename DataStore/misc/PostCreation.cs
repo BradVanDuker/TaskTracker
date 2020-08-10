@@ -99,6 +99,8 @@ namespace DataStore.misc
                 {
                     csv.Configuration.HasHeaderRecord = true;
                     csv.Configuration.IncludePrivateMembers = false;
+
+                    csv.Parser.Configuration.IgnoreBlankLines = true;
                     csv.Parser.Configuration.Delimiter = "|";
 
                     var records = csv.GetRecords<T>().ToList();
@@ -219,8 +221,6 @@ namespace DataStore.misc
                 taskManager.Insert(task);
             }
         }
-
         #endregion
-
     }
 }
