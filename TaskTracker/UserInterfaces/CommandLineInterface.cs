@@ -36,6 +36,7 @@ namespace TaskTracker.UserInterfaces
             SendMessageToUser(preface);
             SendMessageToUser("Id:  " + task.Id);
             SendMessageToUser("Title:  " + task.Title);
+            SendMessageToUser("Description:  " + task.Description);
             SendMessageToUser("Assigned To:  " + task.AssignedTo?.Name.ToString() ?? "Not Yet Assigned");
             SendMessageToUser("Creation Date:  " + task.DateCreated);
             SendMessageToUser("Details:  ");

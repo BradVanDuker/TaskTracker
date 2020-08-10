@@ -153,7 +153,6 @@ namespace TaskTracker
         {
             var GenericPrompt = new Func<string, string>(propName => $"Please enter this task's {propName}");
             var ProcessString = new ProcessInputHandler((prop, input, task) => prop.SetValue(task, input));
-            //var ProcessDate = new ProcessInputHandler((prop, input, task) => prop.SetValue(task, DateTime.Parse(input)));
             var ProcessUser = new ProcessInputHandler((prop, input, task) =>
             {
                 var user = userManager.GetAll().First(u => u.Name == input);
@@ -181,6 +180,10 @@ namespace TaskTracker
                 var promptForUser = prompt;
                 if (promptForUser == "")
                 {
+                    if(name == "Description")
+                    {
+                        Console.WriteLine();
+                    }
                     promptForUser = $"Enter the task's {name}";
                 }
                 var input = ui.GetUserInput(promptForUser);
@@ -198,14 +201,14 @@ namespace TaskTracker
                 {
                     ui.SendMessageToUser("Oops!  Something went wrong!");
                 }
-
                 i++;
             }
-
             if (i < 0) { return; }
 
-            taskManager.Insert( new Task(dummyTask.Title, dummyTask.Description, 
-                dummyTask.AssignedTo, dummyTask.Source, notes: dummyTask.Notes));
+            var newTask = new Task(dummyTask.Title, dummyTask.Description,
+                dummyTask.AssignedTo, dummyTask.Source, notes: dummyTask.Notes);
+            taskManager.Insert( newTask);
+
         }
 
     }
