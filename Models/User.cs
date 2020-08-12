@@ -1,4 +1,4 @@
-﻿namespace TaskTracker
+﻿namespace Models
 {
     public class User
     {

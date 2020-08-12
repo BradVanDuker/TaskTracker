@@ -1,4 +1,4 @@
-﻿using DataStore.DataManagers;
+﻿using DataStore.SQLiteDataManagers;
 using DataStore.misc;
 using Microsoft.Data.Sqlite;
 using System;

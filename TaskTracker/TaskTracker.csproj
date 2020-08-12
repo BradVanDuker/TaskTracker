@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="OldProgram.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="TaskTrackerDb.db" />
   </ItemGroup>
 
@@ -15,8 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataStore\DataStore.csproj" />
-    <ProjectReference Include="..\Models\Models.csproj" />
+    <ProjectReference Include="..\Controllers\Controllers.csproj" />
+    <ProjectReference Include="..\SolutionInterfaceLibrary\SolutionInterfaceLibrary.csproj" />
+    <ProjectReference Include="..\UserInterfaces\UserInterfaces.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 using DataStore.misc;
 using System.Data;
 
-namespace DataStore.DataManagers
+namespace DataStore.SQLiteDataManagers
 {
     public abstract class DataManager<T>
     {

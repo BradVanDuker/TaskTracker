@@ -2,8 +2,8 @@
 using DataStore.SQLiteDataManagers;
 using System;
 using System.Linq;
-using TaskTracker;
 using TaskTracker.DataStore;
+using Models;
 
 namespace DataStore
 {

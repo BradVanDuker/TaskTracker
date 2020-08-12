@@ -1,20 +1,14 @@
 ﻿using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.IO;
 using System.Text;
 using DataStore.misc;
-using DatabaseUtils;
-using System.Linq;
-using System.Data.SqlClient;
-using SQLitePCL;
-using DataStore.DataManagers;
-using System.Data.Common;
+using DataStore.SQLiteDataManagers;
+using Models;
 
 namespace TaskTracker.DataStore
 {
-    public class SQLite3Store : IDataStore
+    public class SQLite3Store 
     {
         /* It appears Sqlite3 library doesn't integrate fully into ADO.NET */
         //private static readonly string dbName = "TaskTracker.db";

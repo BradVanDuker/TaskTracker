@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 using System.Data;
 using TaskTracker;
 using System.IO;
-using DataStore.DataManagers;
+using DataStore.SQLiteDataManagers;
 
 namespace Scratchpaper
 {

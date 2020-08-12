@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TaskTracker
+namespace Models
 {
     public class Task
     {

@@ -6,8 +6,9 @@ using DataStore.misc;
 using Dapper;
 using DataStore.SQLiteDataManagers;
 using System.Linq;
+using Models;
 
-namespace DataStore.DataManagers
+namespace DataStore.SQLiteDataManagers
 {
     public class TaskManager : DataManager<Task>
     {
@@ -83,7 +84,13 @@ namespace DataStore.DataManagers
 
         override public void Delete(Task task)
         {
-            throw new NotImplementedException();
+            var sql = "DELETE FROM Task WHERE Id == @id;";
+            using (connection)
+            {
+                var command = GetCommand(sql, connection);
+                var param = new SqliteParameter("id", task.Id);
+                ExecuteNonQuery(sql, new SqliteParameter[] { param });
+            }
         }
     }
 

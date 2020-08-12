@@ -4,10 +4,10 @@ using System.Text;
 using Microsoft.Data.Sqlite;
 using DataStore.misc;
 using System.Data;
-using TaskTracker;
 using System.Linq;
+using Models;
 
-namespace DataStore.DataManagers
+namespace DataStore.SQLiteDataManagers
 {
     public class UserManager : DataManager<User>
     {

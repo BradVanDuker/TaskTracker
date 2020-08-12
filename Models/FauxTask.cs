@@ -1,21 +1,20 @@
-﻿using DataStore.SQLiteDataManagers;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Models;
+using System.Text;
 
-
-namespace DataStore.SQLiteDataManagers
+namespace Models
 {
-    internal class IntermediateTask
+   
+    public class FauxTask
     {
-        public IntermediateTask()
+        public FauxTask()
         {
 
         }
 
-        public IntermediateTask(Task task)
+        public FauxTask(Task task)
         {
-            foreach(var incomingProp in typeof(Task).GetProperties())
+            foreach (var incomingProp in typeof(Task).GetProperties())
             {
                 var propName = incomingProp.Name;
                 var value = incomingProp.GetValue(task);
@@ -85,38 +84,6 @@ namespace DataStore.SQLiteDataManagers
                 values.Add(prop.GetValue(this));
             }
             return values;
-        }
-
-        public Task ToTask(UserManager userManager)
-        {
-#nullable enable
-            static DateTime? processNullableDate(string? stringRep)
-            {
-                if (stringRep == null || stringRep == "")
-                {
-                    return null;
-                }
-                else
-                {
-                    return DateTime.Parse(stringRep);
-                }
-            }
-#nullable disable
-            var dateCreated = processNullableDate(this.DateCreated);
-            var dateAssigned = processNullableDate(this.DateAssigned);
-            var dateCompleted = processNullableDate(this.DateCompleted);
-
-            var task = new Task(
-                title: this.Title,
-                description: this.Description,
-                assignedTo: userManager.Get(this.AssignedToUserId),
-                source: userManager.Get(this.SourceUserId),
-                id: this.Id,
-                dateCreated: dateCreated,
-                dateAssigned: dateAssigned,
-                dateCompleted: dateCompleted
-                );
-            return task;
         }
     }
 }

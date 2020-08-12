@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TaskTracker
 {
-    internal class Command
+    public class Command
     {
     }
 
-    internal class MenuOption
+    public class MenuOption
     {
         public int Id { get; }
         public string Name { get; }
@@ -21,5 +22,11 @@ namespace TaskTracker
             this.RunCommand = runCommand;
             this.Category = category;
         }
+    }
+
+    public class Request
+    {
+        public int Id { get; set; }
+        public Dictionary<string, object> parameters { get; set; }
     }
 }
