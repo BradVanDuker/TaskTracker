@@ -2,8 +2,6 @@
 {
     public interface IUserInterface
     {
-        bool SendRequestToInterface();
-
-        
+        void Run();
     }
 }

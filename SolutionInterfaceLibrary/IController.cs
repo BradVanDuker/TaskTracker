@@ -9,11 +9,12 @@ namespace TaskTracker
     public delegate void QuitHandler();
     public interface IController
     {
-        event EventHandler QuitEventHandler;
-
-        void RaiseQuitEvent(object sender, EventArgs args);
-
         IEnumerable<Task> GetTasks();
 
+        IEnumerable<User> GetUsers();
+
+        public void AddTask(Task task);
+
+        public void DeleteTask(int id);
     }
 }

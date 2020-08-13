@@ -1,7 +1,11 @@
 ﻿using DataStore.SQLiteDataManagers;
 using Models;
+using SolutionInterfaceLibrary;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 using TaskTracker;
@@ -15,15 +19,18 @@ namespace Controllers
 
         bool isRunning = true;
 
-        public event EventHandler QuitEventHandler;
+        //public event EventHandler QuitEventHandler;
         readonly private TaskManager taskManager;
         readonly private UserManager userManager;
+        readonly private EventHub eventHub;
+        
 
-        public MainController(TaskManager taskManager, UserManager userManager)
+        public MainController(TaskManager taskManager, UserManager userManager, EventHub eventHub)
         {
             this.taskManager = taskManager;
             this.userManager = userManager;
-            QuitEventHandler += OnQuit; 
+            this.eventHub = eventHub;
+            this.eventHub.QuitEvent += QuitEventResponse;
         }
 
         public void Run()
@@ -37,11 +44,6 @@ namespace Controllers
         public void AddTask(Task task)
         {
             taskManager.Insert(task);
-        }
-
-        public void AddTask(FauxTask task)
-        {
-
         }
 
         public void DeleteTask(int id)
@@ -61,22 +63,19 @@ namespace Controllers
             return userManager.GetAll();
         }
 
-        public void SendRequestToController()
-        {
-            throw new NotImplementedException();
-        }
-
 
         // This listens for QuitEvent then does something in response.
-        public void OnQuit(object sender, EventArgs e)
+        public void QuitEventResponse(object sender, EventArgs e)
         {
             isRunning = false;
         }
 
-        // When you want to raise a QuitEvent, call this method
-        public void RaiseQuitEvent(object sender, EventArgs args)
+        public void Quit()
         {
-            QuitEventHandler?.Invoke(this, EventArgs.Empty);
+            eventHub.QuitEvent(this, EventArgs.Empty);
         }
+
+        
     }
+
 }

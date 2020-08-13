@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Controllers;
 using DataStore.SQLiteDataManagers;
+using SolutionInterfaceLibrary;
 using UserInterfaces;
 
 namespace TaskTracker
@@ -15,19 +17,31 @@ namespace TaskTracker
             try
             {
                 Console.WriteLine("Hello, World!");
-                var userManager = new UserManager();
-                var taskManager = new TaskManager(userManager);
-
-                var controller = new MainController(taskManager, userManager);
-                var ui = new CommandLineInterface(controller);
-                ui.Run();
-                
+                Run();
                 
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+        }
+
+        async static void Run()
+        {
+            var userManager = new UserManager();
+            var taskManager = new TaskManager(userManager);
+            var eventHub = EventHub.GetInstance();
+            var controller = new MainController(taskManager, userManager, eventHub);
+            var ui = new CommandLineInterface(controller, eventHub);
+
+            ui.Run();
+
+            //Task runController = new Task(() => controller.Run());
+            //runController.Start();
+            //Task runUI = new Task(() => ui.Run());
+            //runUI.Start();
+            //Task.WaitAll();
+            
         }
     }
 }

@@ -45,7 +45,6 @@ namespace Models
 
         public User AssignedTo { get; set; }
         public User Source { get; set; }
-        public int MyProperty { get; set; }
 #nullable enable
 
         private string? _DateAssigned;

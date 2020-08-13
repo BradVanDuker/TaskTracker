@@ -4,23 +4,24 @@ using System.Linq;
 using TaskTracker;
 using TaskTracker.UserInterfaces;
 using Models;
+using System.Collections;
+using SolutionInterfaceLibrary;
+using System.Reflection;
 
 namespace UserInterfaces
 {
     public class CommandLineInterface : IUserInterface
     {
         readonly IController controller;
+        readonly EventHub eventHub;
         private bool isRunning = true;
 
-        public CommandLineInterface(IController controller)
+        #region General Functions
+        public CommandLineInterface(IController controller, EventHub hub)
         {
             this.controller = controller;
-            controller.QuitEventHandler += QuitEventResponse;
-        }
-
-        public bool SendRequestToInterface()
-        {
-            throw new NotImplementedException();
+            this.eventHub = hub;
+            eventHub.QuitEvent += QuitEventResponse;
         }
 
 
@@ -32,7 +33,25 @@ namespace UserInterfaces
             }
         }
 
+        protected string GetResponseFromUser(string prompt)
+        {
+            Console.WriteLine(prompt);
+            return Console.ReadLine();
+        }
 
+        protected void OnQuit()
+        {
+            eventHub.QuitEvent(this, EventArgs.Empty);
+        }
+
+        protected void QuitEventResponse(object sender, EventArgs args)
+        {
+            isRunning = false;
+        }
+        #endregion
+
+        #region Menu Options
+        static List<MenuOption> menuOptions = new List<MenuOption>();
         protected void MainMenu()
         {
 
@@ -73,11 +92,6 @@ namespace UserInterfaces
 
         }
 
-        protected void EnumerateAndDisplayItems()
-        {
-
-        }
-
         protected void DisplayTaskDetails()
         {
             var response = GetResponseFromUser("Enter the id of a task...");
@@ -109,62 +123,99 @@ namespace UserInterfaces
             }
         }
 
-        delegate T CastTo<T>(string str);
-        protected void AddTask()
+        delegate void ProcessInputHandler(PropertyInfo prop, string input, Task task);
+        void AddNewTask()
         {
-            var BACK = "BACK";
-            var QUIT = "QUIT";
-
-            Console.WriteLine($"Type {BACK} to go back a step or {QUIT} to go back to the main menu.");
-            int index = 0;
-
-            CastTo<string> handleString = str => str;
-            CastTo<DateTime> handleDT = str => DateTime.Parse(str);
-            //var CastToInt = new Func<string, int>(str => )
-
-            var props = typeof(Task).GetProperties().ToList();
-            var fauxTask = new FauxTask();
-
-            //fauxTask.Title = handleString("foo");
-            //var foo = 
-            while(-1 < index && index < props.Count)
+            var GenericPrompt = new Func<string, string>(propName => $"Please enter this task's {propName}");
+            var ProcessString = new ProcessInputHandler((prop, input, task) => prop.SetValue(task, input));
+            //var ProcessDate = new ProcessInputHandler((prop, input, task) => prop.SetValue(task, DateTime.Parse(input)));
+            var ProcessUser = new ProcessInputHandler((prop, input, task) =>
             {
-                var prop = props[index];
-                var response = GetResponseFromUser($"Enter the task's {prop.Name}...");
-                var propType = prop.PropertyType;
+                var user = controller.GetUsers().First(u => u.Name == input);
+                prop.SetValue(task, user);
+            });
+
+            var groups = new List<(string, string, ProcessInputHandler)>();
+            groups.Add(("Title", GenericPrompt("Title"), ProcessString));
+            groups.Add(("Description", GenericPrompt("Description"), ProcessString));
+            groups.Add(("AssignedTo", "Please enter the user's name who is assigned to this task.", ProcessUser));
+            groups.Add(("Source", "Please enter the user's name who is assigning this task.", ProcessUser));
+            groups.Add(("Notes", "Please enter any additional notes for this task.", ProcessString));
+
+            var dummyTask = new Task("", "", new User(""), new User(""));
+
+            var back = "BACK";
+            var quit = "QUIT";
+            Console.WriteLine($"Creating a new task. Enter \"{back}\" at any time to go back a step, or \"{quit}\" to quit.");
+
+            int i = 0;
+            while (-1 < i && i < groups.Count)
+            {
+                (var name, var prompt, var proc) = groups[i];
+                var prop = typeof(Task).GetProperty(name);
+                var promptForUser = prompt;
+                if (promptForUser == "")
+                {
+                    promptForUser = $"Enter the task's {name}";
+                }
+                var input = GetResponseFromUser(promptForUser);
+
+                if (input == back)
+                { i -= 1; continue; }
+                if (input == quit)
+                { return; }
+
+                try
+                {
+                    proc(prop, input, dummyTask);
+                }
+                catch (Exception)
+                {
+                    GetResponseFromUser("Oops!  Something went wrong!");
+                }
+
+                i++;
             }
+
+            if (i < 0) { return; }
+
+            controller.AddTask(new Task(dummyTask.Title, dummyTask.Description,
+                dummyTask.AssignedTo, dummyTask.Source, notes: dummyTask.Notes));
         }
 
         protected void DeleteTask()
         {
-            throw new NotImplementedException();
+            var response = GetResponseFromUser("Enter the id of the task to delete");
+            int id;
+            try
+            {
+                id = Int32.Parse(response);
+                controller.DeleteTask(id);
+                Console.WriteLine($"Task {id} deleted");
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Invalid id");
+                return;
+            }
         }
 
-        protected string GetResponseFromUser(string prompt)
-        {
-            Console.WriteLine(prompt);
-            return Console.ReadLine();
-        }
+        
 
-        protected void OnQuit()
-        {
-            controller.RaiseQuitEvent(this, EventArgs.Empty);
-        }
-
-        protected void QuitEventResponse(object sender, EventArgs args)
-        {
-            isRunning = false;
-        }
-
-        static List<MenuOption> menuOptions = new List<MenuOption>();
         protected IEnumerable<MenuOption> GetMainMenuOptions()
         {
+            void AddNewMenuOption(string prompt, Action action)
+            {
+                menuOptions.Add(new MenuOption(prompt, action));
+            }
+
             if (menuOptions.Count == 0)
             {
-                menuOptions.Add(new MenuOption("Quit", OnQuit));
-                menuOptions.Add(new MenuOption("Display All Tasks", DisplayAllTasks));
-                menuOptions.Add(new MenuOption("Display Task Detais", DisplayTaskDetails));
-                //menuOptions.Add()
+                AddNewMenuOption("Quit", OnQuit);
+                AddNewMenuOption("Display All Tasks", DisplayAllTasks);
+                AddNewMenuOption("Display Task Detais", DisplayTaskDetails);
+                AddNewMenuOption("Add New Task", AddNewTask);
+                AddNewMenuOption("Delete Task", DeleteTask);
             }
             
             return menuOptions;
@@ -218,4 +269,5 @@ namespace UserInterfaces
             id = currentId++;
         }
     }
+    #endregion
 }
