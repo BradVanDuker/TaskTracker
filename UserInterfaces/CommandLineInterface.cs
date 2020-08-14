@@ -15,6 +15,7 @@ namespace UserInterfaces
         readonly IController controller;
         readonly EventHub eventHub;
         private bool isRunning = true;
+        static List<MenuOption> menuOptions = new List<MenuOption>();
 
         #region General Functions
         public CommandLineInterface(IController controller, EventHub hub)
@@ -48,13 +49,42 @@ namespace UserInterfaces
         {
             isRunning = false;
         }
+
+        private IEnumerable<Task> GetAllTasks()
+        {
+            return controller.GetTasks();
+        }
+
+        private Task GetTask(int id)
+        {
+            return GetAllTasks().First(t => t.Id == id);
+        }
+
         #endregion
 
         #region Menu Options
-        static List<MenuOption> menuOptions = new List<MenuOption>();
+        protected IEnumerable<MenuOption> GetMainMenuOptions()
+        {
+            static void AddNewMenuOption(string prompt, Action action)
+            {
+                menuOptions.Add(new MenuOption(prompt, action));
+            }
+
+            if (menuOptions.Count == 0)
+            {
+                AddNewMenuOption("Quit", OnQuit);
+                AddNewMenuOption("Display All Tasks", DisplayAllTasks);
+                AddNewMenuOption("Display Task Detais", DisplayTaskDetails);
+                AddNewMenuOption("Add New Task", AddNewTask);
+                AddNewMenuOption("Delete Task", DeleteTask);
+                AddNewMenuOption("Update a Task", UpdateTask);
+            }
+
+            return menuOptions;
+        }
+
         protected void MainMenu()
         {
-
             Console.WriteLine("\n** Main Menu **");
 
             var options = GetMainMenuOptions();
@@ -88,8 +118,6 @@ namespace UserInterfaces
             {
                 Console.WriteLine("Invalid Selection");
             }
-
-
         }
 
         protected void DisplayTaskDetails()
@@ -123,7 +151,7 @@ namespace UserInterfaces
             }
         }
 
-        delegate void ProcessInputHandler(PropertyInfo prop, string input, Task task);
+        protected delegate void ProcessInputHandler(PropertyInfo prop, string input, Task task);
         void AddNewTask()
         {
             var GenericPrompt = new Func<string, string>(propName => $"Please enter this task's {propName}");
@@ -200,35 +228,55 @@ namespace UserInterfaces
             }
         }
 
-        
-
-        protected IEnumerable<MenuOption> GetMainMenuOptions()
+        protected void  UpdateTask()
         {
-            void AddNewMenuOption(string prompt, Action action)
+            var idResponse = GetResponseFromUser("Enter the id of the task to update");
+            Task task;
+            try
             {
-                menuOptions.Add(new MenuOption(prompt, action));
+                task = GetTask(Int32.Parse(idResponse)); 
             }
-
-            if (menuOptions.Count == 0)
+            catch(Exception)
             {
-                AddNewMenuOption("Quit", OnQuit);
-                AddNewMenuOption("Display All Tasks", DisplayAllTasks);
-                AddNewMenuOption("Display Task Detais", DisplayTaskDetails);
-                AddNewMenuOption("Add New Task", AddNewTask);
-                AddNewMenuOption("Delete Task", DeleteTask);
+                Console.WriteLine("Invalid Id");
+                return;
+            }
+            var propResponse = GetResponseFromUser("Enter the name of the property to change");
+            PropertyInfo prop;
+            try
+            {
+                prop = typeof(Task).GetProperty(propResponse);
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Invalid property name.");
+                return;
+            }
+            var valueResponse = GetResponseFromUser("Enter the new value");
+            object newValue = null;
+            try
+            {
+                Type newType = prop.PropertyType;
+                if(prop.PropertyType == typeof(User))
+                {
+                    newValue = controller.GetUsers().First(u => u.Name == valueResponse);
+                }
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Could not parse your entry");
+                return;
+            }
+            try
+            {
+                controller.UpdateTask(task.Id, prop.Name, newValue);
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Update didn't go through");
+                return;
             }
             
-            return menuOptions;
-        }
-
-        private IEnumerable<Task> GetAllTasks()
-        {
-            return controller.GetTasks();
-        }
-
-        private Task GetTask(int id)
-        {
-            return GetAllTasks().First(t => t.Id == id);
         }
 
     }

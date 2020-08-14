@@ -4,12 +4,12 @@ using System.Text;
 using Microsoft.Data.Sqlite;
 using DataStore.misc;
 using System.Data;
+using System.Reflection;
 
 namespace DataStore.SQLiteDataManagers
 {
     public abstract class DataManager<T>
     {
-
         public abstract IEnumerable<T> GetAll();
 
         public abstract T Get(int id);
@@ -19,6 +19,9 @@ namespace DataStore.SQLiteDataManagers
         public abstract void Delete(T thing);
 
         public abstract void Update(T thing);
+
+        public abstract void Update(object taskId, PropertyInfo property, object newValue);
+
 
 
         protected SqliteConnection GetConnection()

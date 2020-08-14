@@ -35,13 +35,6 @@ namespace TaskTracker
             var ui = new CommandLineInterface(controller, eventHub);
 
             ui.Run();
-
-            //Task runController = new Task(() => controller.Run());
-            //runController.Start();
-            //Task runUI = new Task(() => ui.Run());
-            //runUI.Start();
-            //Task.WaitAll();
-            
         }
     }
 }

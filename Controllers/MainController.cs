@@ -63,6 +63,11 @@ namespace Controllers
             return userManager.GetAll();
         }
 
+        public Task GetTask(int id)
+        {
+            return GetTasks().First(t => t.Id == id);
+        }
+
 
         // This listens for QuitEvent then does something in response.
         public void QuitEventResponse(object sender, EventArgs e)
@@ -75,7 +80,14 @@ namespace Controllers
             eventHub.QuitEvent(this, EventArgs.Empty);
         }
 
-        
+        public void UpdateTask(int id, string propertyName, object newValue)
+        {
+            var prop = typeof(Task).GetProperty(propertyName);
+            taskManager.Update(id, prop, newValue);
+            //var task = GetTask(id);
+            //prop.SetValue(task, newValue);
+            //taskManager.Update(task);
+        }
     }
 
 }

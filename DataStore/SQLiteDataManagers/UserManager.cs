@@ -6,6 +6,7 @@ using DataStore.misc;
 using System.Data;
 using System.Linq;
 using Models;
+using System.Reflection;
 
 namespace DataStore.SQLiteDataManagers
 {
@@ -86,6 +87,11 @@ namespace DataStore.SQLiteDataManagers
             var nameParam = new SqliteParameter("name", user.Name);
             var idParam = new SqliteParameter("id", user.Id);
             ExecuteNonQuery(sql, nameParam, idParam);
+        }
+
+        public override void Update(object taskId, PropertyInfo taskProperty, object newValue)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -7,6 +7,7 @@ using Dapper;
 using DataStore.SQLiteDataManagers;
 using System.Linq;
 using Models;
+using System.Reflection;
 
 namespace DataStore.SQLiteDataManagers
 {
@@ -66,13 +67,42 @@ namespace DataStore.SQLiteDataManagers
 
         public override void Update(Task thing)
         {
-            using (connection)
+            var sql = 
+                "UPDATE Task" +
+                "SET Title=@title, Description=@description, AssignedToUserId=@assignedToUserId," +
+                    "SourceUserId=@sourceUserId, DateCreated=@dateCreated, DateAssigned=@dateAssigned, " +
+                    "DateCompleted=@dateCreated, Notes=@notes" +
+                "WHERE Id=@id";
+            
+            var args = new SqliteParameter[]
             {
-                connection.Open();
-                
-                
-            }
-                
+                new SqliteParameter("@title", thing.Title),
+                new SqliteParameter("@description", thing.Description),
+                new SqliteParameter("@assignedToUserId", thing.AssignedTo.Id),
+                new SqliteParameter("@sourceUserId", thing.Source.Id),
+                new SqliteParameter("@dateCreated", thing.DateCreated),
+                new SqliteParameter("@dateAssigned", thing.DateAssigned),
+                new SqliteParameter("@dateCompleted", thing.DateCompleted),
+                new SqliteParameter("@dateCreated", thing.DateCreated),
+                new SqliteParameter("@notes", thing.Notes),
+                new SqliteParameter("@id", thing.Id)
+            };
+            ExecuteNonQuery(sql, args);
+            
+        }
+
+        override public void Update(object taskId, PropertyInfo taskProperty, object newValue)
+        {
+            var sql =
+                "UPDATE Task" +
+                "SET @ParamName=@newValue" +
+                "WHERE Id=@id";
+            var args = new SqliteParameter[] {
+                new SqliteParameter("@ParamName", taskProperty.Name),
+                new SqliteParameter("@newValue", newValue),
+                new SqliteParameter("@id", taskId)
+            };
+            ExecuteNonQuery(sql, args);
         }
 
         public override Task Get(int id)

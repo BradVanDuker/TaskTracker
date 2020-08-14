@@ -16,5 +16,7 @@ namespace TaskTracker
         public void AddTask(Task task);
 
         public void DeleteTask(int id);
+
+        public void UpdateTask(int id, string propertyName, object newValue);
     }
 }
